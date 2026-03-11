@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Kocaeli yerel haberlerini gerçek zamanlı harita üzerinde izleyin. Trafik kazaları, yangınlar, elektrik kesintileri ve daha fazlası.">
+    <title>Kocaeli Haber Haritası | Kent Olayları İzleme Sistemi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Sol Panel: Filtreler + Son Haberler -->
+        <aside id="sidebar">
+            <div id="sidebar-header">
+                <div class="logo-area">
+                    <div class="logo-icon">🗺️</div>
+                    <div>
+                        <h1>Kocaeli Haber Haritası</h1>
+                        <p class="subtitle">Kent Olayları İzleme Sistemi</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtre Formu -->
+            <div class="panel-section" id="filter-panel">
+                <h2 class="panel-title">
+                    <span class="panel-title-icon">⚙️</span> Filtreler
+                </h2>
+
+                <div class="filter-group">
+                    <label class="filter-label" for="tarih-baslangic">📅 Tarih Aralığı</label>
+                    <div class="date-row">
+                        <input type="date" id="tarih-baslangic" class="filter-input" title="Başlangıç Tarihi">
+                        <span class="date-sep">—</span>
+                        <input type="date" id="tarih-bitis" class="filter-input" title="Bitiş Tarihi">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">🚨 Olay Türü</label>
+                    <div class="category-checkboxes" id="tur-filtresi">
+                        <label class="cat-check" data-tur="Trafik Kazası">
+                            <input type="checkbox" value="Trafik Kazası" checked>
+                            <span class="cat-dot" style="background:#ef4444"></span>
+                            <span>Trafik Kazası</span>
+                        </label>
+                        <label class="cat-check" data-tur="Yangın">
+                            <input type="checkbox" value="Yangın" checked>
+                            <span class="cat-dot" style="background:#f97316"></span>
+                            <span>Yangın</span>
+                        </label>
+                        <label class="cat-check" data-tur="Elektrik Kesintisi">
+                            <input type="checkbox" value="Elektrik Kesintisi" checked>
+                            <span class="cat-dot" style="background:#eab308"></span>
+                            <span>Elektrik Kesintisi</span>
+                        </label>
+                        <label class="cat-check" data-tur="Hırsızlık">
+                            <input type="checkbox" value="Hırsızlık" checked>
+                            <span class="cat-dot" style="background:#8b5cf6"></span>
+                            <span>Hırsızlık</span>
+                        </label>
+                        <label class="cat-check" data-tur="Kültürel Etkinlikler">
+                            <input type="checkbox" value="Kültürel Etkinlikler" checked>
+                            <span class="cat-dot" style="background:#06b6d4"></span>
+                            <span>Kültürel Etkinlikler</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label" for="ilce-select">📍 İlçe</label>
+                    <select id="ilce-select" class="filter-input">
+                        <option value="">Tüm İlçeler</option>
+                    </select>
+                </div>
+
+                <button id="filtrele-btn" class="btn-primary" onclick="filtreUygula()">
+                    <span>🔍</span> Filtrele
+                </button>
+                <button id="temizle-btn" class="btn-secondary" onclick="filtreleriTemizle()">
+                    <span>↺</span> Sıfırla
+                </button>
+            </div>
+
+            <!-- Veri Çekme -->
+            <div class="panel-section">
+                <h2 class="panel-title">
+                    <span class="panel-title-icon">⚡</span> Veri Güncelle
+                </h2>
+                <button id="scrape-btn" class="btn-scrape" onclick="scrapeBaslat()">
+                    <span id="scrape-icon">🔄</span> Haberleri Güncelle
+                </button>
+                <p class="scrape-note">Son 3 günlük haberler çekilir</p>
+                <div id="scrape-status" class="scrape-status hidden"></div>
+            </div>
+
+            <!-- İstatistikler -->
+            <div class="panel-section" id="stats-panel">
+                <h2 class="panel-title">
+                    <span class="panel-title-icon">📊</span> İstatistikler
+                </h2>
+                <div id="stats-content">
+                    <div class="stat-item">
+                        <span class="stat-label">Toplam Haber</span>
+                        <span class="stat-value" id="stat-toplam">—</span>
+                    </div>
+                    <div id="tur-stats"></div>
+                </div>
+            </div>
+
+            <!-- Son Haberler -->
+            <div class="panel-section" id="recent-panel">
+                <h2 class="panel-title">
+                    <span class="panel-title-icon">📰</span> Son Haberler
+                    <span class="haber-count" id="haber-count">0</span>
+                </h2>
+                <div id="haber-listesi">
+                    <div class="loading-placeholder">
+                        <div class="spinner"></div>
+                        <p>Haberler yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sağ Panel: Harita -->
+        <main id="map-container">
+            <div id="map"></div>
+            <div id="map-overlay" class="hidden">
+                <div class="overlay-card">
+                    <div class="spinner large"></div>
+                    <p>Haberler yükleniyor...</p>
+                </div>
+            </div>
+            <!-- Harita Üstü Bilgi Çubuğu -->
+            <div id="map-info-bar">
+                <span id="marker-count-info">📍 0 haber gösteriliyor</span>
+                <div class="legend">
+                    <span class="legend-item"><span class="leg-dot" style="background:#ef4444"></span>Trafik</span>
+                    <span class="legend-item"><span class="leg-dot" style="background:#f97316"></span>Yangın</span>
+                    <span class="legend-item"><span class="leg-dot" style="background:#eab308"></span>Elektrik</span>
+                    <span class="legend-item"><span class="leg-dot" style="background:#8b5cf6"></span>Hırsızlık</span>
+                    <span class="legend-item"><span class="leg-dot" style="background:#06b6d4"></span>Etkinlik</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE = 'http://localhost:8000';
+        const MAPS_KEY = 'AIzaSyDj--he-nX0_5mllQccsDTgUqrlrCAjCPc';
+    </script>
+    <script src="/static/app.js"></script>
+    <!-- Google Maps API - defer yükleme -->
+    <script>
+        // Maps API'yi dinamik yükle (key app.js'den alınır)
+        function loadMapsAPI() {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&callback=initMap&language=tr&region=TR`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        // DOM yüklendikten sonra başlat
+        document.addEventListener('DOMContentLoaded', loadMapsAPI);
+    </script>
+</body>
+
+</html>
