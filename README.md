@@ -29,7 +29,7 @@ Kaza, yangın, hırsızlık, elektrik kesintisi gibi önemli haberler yapay zeka
 ## 🛠️ Teknolojiler
 
 ### Backend
-*   **Dil**: Python 3.x
+*   **Dil**: Python 3.11x
 *   **Framework**: FastAPI, Uvicorn
 *   **Veritabanı**: MongoDB (Motor / PyMongo)
 *   **NLP & ML Modelleri**: Spacy, Sentence-Transformers, Scikit-Learn
