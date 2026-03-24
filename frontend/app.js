@@ -31,6 +31,7 @@ let map = null;
 let markers = [];
 let currentHaberler = [];
 let infoWindow = null;
+let markersById = {};
 
 // ============================================================
 // MAP INITIALIZATION (called by Google Maps callback)
@@ -186,53 +187,113 @@ function markerlariGuncelle(haberler) {
     // Mevcut markerleri temizle
     markers.forEach(m => m.setMap(null));
     markers = [];
+    markersById = {};
 
-    haberler.forEach(haber => {
+    // Jitter (Aynı konumdaki haberleri hafifçe ayırma) işlemi
+    const clusteredHaberler = [];
+    const konumGruplari = {};
+    
+    haberler.forEach(h => {
+        if (!h.lat || !h.lng) return;
+        const key = `${h.lat.toFixed(4)}_${h.lng.toFixed(4)}`;
+        if (!konumGruplari[key]) konumGruplari[key] = [];
+        konumGruplari[key].push(h);
+    });
+
+    Object.values(konumGruplari).forEach(grup => {
+        if (grup.length === 1) {
+            clusteredHaberler.push({ ...grup[0], orijinal_lat: grup[0].lat, orijinal_lng: grup[0].lng, count: 1 });
+        } else {
+            const radius = 0.003; // Yaklaşık 300 metre
+            const angleStep = (Math.PI * 2) / grup.length;
+            grup.forEach((h, i) => {
+                const newH = { ...h };
+                newH.orijinal_lat = h.lat;
+                newH.orijinal_lng = h.lng;
+                newH.lat = h.lat + radius * Math.cos(i * angleStep);
+                newH.lng = h.lng + radius * Math.sin(i * angleStep);
+                newH.count = grup.length;
+                clusteredHaberler.push(newH);
+            });
+        }
+    });
+
+    clusteredHaberler.forEach(haber => {
         if (!haber.lat || !haber.lng) return;
 
         const renk = KATEGORI_RENK[haber.haber_turu] || "#ef4444";
         const emoji = KATEGORI_EMOJI[haber.haber_turu] || "📌";
 
-        // Emoji ve SVG problemini kökten çözen Canvas tabanlı ikon oluşturucu
+        // Emoji ve SVG problemini kökten çözen daha şık Canvas ikon oluşturucu
         function createEmojiMarker(color, emojiText) {
+            const size = 60;
             const canvas = document.createElement('canvas');
-            canvas.width = 40;
-            canvas.height = 56;
+            canvas.width = size;
+            canvas.height = size + 10;
             const ctx = canvas.getContext('2d');
+            const center = size / 2;
 
-            // Pin şekli (Dış damla)
+            // Yumuşak Gölge
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 4;
+
+            // Dış beyaz kalın çerçeve
+            ctx.beginPath();
+            ctx.arc(center, center, 22, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Gölgeleri kapat (içerik için)
+            ctx.shadowColor = 'transparent';
+
+            // İç renkli halka
+            ctx.beginPath();
+            ctx.arc(center, center, 19, 0, Math.PI * 2);
             ctx.fillStyle = color;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-
-            // Üst yuvarlak
-            ctx.beginPath();
-            ctx.arc(20, 20, 18, 0, Math.PI * 2);
             ctx.fill();
-            ctx.stroke();
 
-            // Alt sivri kısım
+            // Parlama efekti (Glassmorphism dokunuşu)
+            const grd = ctx.createLinearGradient(center - 10, center - 15, center + 10, center + 15);
+            grd.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            grd.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
             ctx.beginPath();
-            ctx.moveTo(20, 52);
-            ctx.lineTo(6, 26);
-            ctx.lineTo(34, 26);
-            ctx.closePath();
+            ctx.arc(center, center, 19, 0, Math.PI * 2);
+            ctx.fillStyle = grd;
             ctx.fill();
-            ctx.stroke();
+
+            // Alt yön işaretçisi (Küçük üçgen)
+            ctx.beginPath();
+            ctx.moveTo(center - 8, center + 18);
+            ctx.lineTo(center, center + 28);
+            ctx.lineTo(center + 8, center + 18);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(center - 6, center + 18);
+            ctx.lineTo(center, center + 25);
+            ctx.lineTo(center + 6, center + 18);
+            ctx.fillStyle = color;
+            ctx.fill();
 
             // Emojiyi tam ortaya çiz
-            ctx.font = "20px Arial";
+            ctx.font = "20px 'Segoe UI Emoji', Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(emojiText, 20, 22);
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetY = 1;
+            ctx.fillText(emojiText, center, center + 2);
 
-            return canvas.toDataURL(); // Resmi base64 PNG'ye çevirip veriyoruz
+            return canvas.toDataURL();
         }
 
         const customIcon = {
             url: createEmojiMarker(renk, emoji),
-            scaledSize: new google.maps.Size(40, 56),
-            anchor: new google.maps.Point(20, 56)
+            scaledSize: new google.maps.Size(48, 56), // Biraz daha büyük ve belirgin
+            anchor: new google.maps.Point(24, 52)     // Merkez ve üçgen ucuna odaklı
         };
 
         const marker = new google.maps.Marker({
@@ -248,6 +309,7 @@ function markerlariGuncelle(haberler) {
         });
 
         markers.push(marker);
+        markersById[haber.id] = marker;
     });
 
     // Info barı güncelle
@@ -344,16 +406,18 @@ function haberKartaTikla(idx) {
     const secilenTurler = getSecilenTurler();
     const filtreliHaberler = currentHaberler.filter(h => secilenTurler.includes(h.haber_turu));
     const haber = filtreliHaberler[idx];
-    if (!haber || !haber.lat || !haber.lng) return;
+    if (!haber) return;
 
-    // Haritayı o haberin konumuna götür
-    map.panTo({ lat: haber.lat, lng: haber.lng });
-    map.setZoom(14);
-
-    // Marker'ı bul ve info window aç
-    const marker = markers[idx];
+    const marker = markersById[haber.id];
+    
     if (marker) {
+        const position = marker.getPosition();
+        map.panTo(position);
+        map.setZoom(14);
         markeraTikla(marker, haber);
+    } else if (haber.lat && haber.lng) {
+        map.panTo({ lat: haber.lat, lng: haber.lng });
+        map.setZoom(14);
     }
 }
 

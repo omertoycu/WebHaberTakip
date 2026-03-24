@@ -1,6 +1,5 @@
-"""
-Scraper Temel Sınıfı - Tüm site scraperları bu sınıftan türer.
-"""
+#Scraper Temel Sınıfı - Tüm site scraperları bu sınıftan türer.
+
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Optional

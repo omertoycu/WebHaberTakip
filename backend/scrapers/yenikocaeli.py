@@ -22,6 +22,11 @@ class YeniKocaeliScraper(CagdasKocaeliScraper):
 
             for link in soup.find_all("a", href=True):
                 href = link.get("href", "")
+                
+                # Geçersiz URL kalıplarını atla (paylaşım ikonları, sayfa çapaları)
+                if "#" in href or "facebook.com/sharer" in href or "twitter.com/intent" in href:
+                    continue
+                    
                 if re.search(r'/\d{4,}|/(haber|detay|makale)/', href) and len(href) > 10:
                     if href.startswith("http"):
                         tam_url = href

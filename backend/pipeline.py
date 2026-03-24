@@ -75,24 +75,30 @@ async def pipeline_calistir() -> dict:
             if not baslik or len(icerik) < 50:
                 continue
 
-            # 2. Sınıflandır
-            haber_turu = siniflandir(baslik, icerik)
+            from datetime import timedelta
+            # 3 günden eski haberleri atla (Döküman İsteri Bölüm 3)
+            if yayin_tarihi < datetime.utcnow() - timedelta(days=3):
+                print(f"[PIPELINE] Eski haber atlandı: {baslik[:40]}... ({yayin_tarihi.strftime('%d.%m.%Y')})")
+                continue
+
+            # 2. Embedding oluştur (Mükerrerlik için kullanılacak)
+            embedding_metin = baslik + " " + icerik[:500]
+            embedding = metni_vektorlesitir(embedding_metin)
+
+            # 3. Sınıflandır (Yapay zeka desteği için artık metnin kendisi gönderiliyor)
+            haber_turu = siniflandir(baslik, icerik, embedding=embedding)
 
             # Sadece proje kategorilerindeki haberleri işle (Diğer'i atla)
             if haber_turu == "Diğer":
                  continue
 
-            # 3. Konum çıkar
+            # 4. Konum çıkar
             konum_metni, ilce = konum_cikar(baslik, icerik)
 
             # Konum bulunamadıysa atla (proje gereksinimi)
             if not konum_metni:
                 konum_bulunamayan += 1
                 continue
-
-            # 4. Embedding oluştur
-            embedding_metin = baslik + " " + icerik[:500]
-            embedding = metni_vektorlesitir(embedding_metin)
 
             # 5. Mükerrer kontrolü
             is_dup, dup_id = await mukerrer_mu(embedding, kaynak_url, haberler_kol)

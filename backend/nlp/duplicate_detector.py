@@ -4,37 +4,9 @@ sentence-transformers + cosine similarity ile %90 eşiği
 """
 import numpy as np
 from typing import Optional
-from sentence_transformers import SentenceTransformer
-
-# Model lazy loading
-_model = None
+from .embedding_helper import metni_vektorlesitir, kosinüs_benzerlik
 
 SIMILARITY_THRESHOLD = 0.90
-
-
-def _get_model():
-    """Sentence transformer modelini lazy load eder."""
-    global _model
-    if _model is None:
-        print("[DEDUP] all-MiniLM-L6-v2 modeli yükleniyor...")
-        _model = SentenceTransformer('all-MiniLM-L6-v2')
-        print("[DEDUP] Model hazır.")
-    return _model
-
-
-def metni_vektorlesitir(metin: str) -> list:
-    """Metni embedding vektörüne çevirir."""
-    model = _get_model()
-    embedding = model.encode(metin, normalize_embeddings=True)
-    return embedding.tolist()
-
-
-def kosinüs_benzerlik(vec1: list, vec2: list) -> float:
-    """İki vektör arasındaki kosinüs benzerliğini hesaplar."""
-    a = np.array(vec1)
-    b = np.array(vec2)
-    # Normalize edilmiş vektörler için dot product = cosine similarity
-    return float(np.dot(a, b))
 
 
 async def mukerrer_mu(

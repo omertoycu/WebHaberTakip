@@ -1,7 +1,3 @@
-"""
-Uygulamayı başlatmak için ana giriş noktası.
-Kullanım: python run.py
-"""
 import uvicorn
 import sys
 import os

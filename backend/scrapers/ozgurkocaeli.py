@@ -23,6 +23,11 @@ class OzgurKocaeliScraper(CagdasKocaeliScraper):
 
             for link in soup.find_all("a", href=True):
                 href = link.get("href", "")
+                
+                # Geçersiz URL kalıplarını atla
+                if "#" in href or "facebook.com/sharer" in href or "twitter.com/intent" in href:
+                    continue
+                    
                 if re.search(r'/\d{4,}[-/]|/(haber|detay|guncel)/', href):
                     if href.startswith("http"):
                         tam_url = href

@@ -32,6 +32,11 @@ class CagdasKocaeliScraper(BaseScraper):
             
             for link in linkler:
                 href = link.get("href", "")
+                
+                # Geçersiz URL kalıplarını atla
+                if "#" in href or "facebook.com/sharer" in href or "twitter.com/intent" in href:
+                    continue
+                
                 # Haber sayfası pattern'i - çoğu haber sitesi /haber/ veya sayısal ID içerir
                 if re.search(r'/(haber|detay|news)/|/\d{4}/\d{2}/', href):
                     if href.startswith("http"):

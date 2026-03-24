@@ -49,8 +49,8 @@ def _get_nlp():
                 return _nlp
             except Exception:
                 continue
-        print("[NER] Hiçbir Türkçe spaCy modeli bulunamadı. Regex tabanlı NER kullanılacak.")
-        _nlp = False  # False = yükleme denendi ama başarısız
+        print("[INFO] Konum tespiti için Kocaeli ilçe listesi (Regex) aktif.")
+        _nlp = False  # False = yükleme denendi ama bulunamadı, kural tabanlı devam et
     return _nlp
 
 
