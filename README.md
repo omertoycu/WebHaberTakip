@@ -1,5 +1,9 @@
 # 🗺️ Kocaeli Haber İzleme Sistemi (Web Haber Takip)
 
+
+https://github.com/user-attachments/assets/41beeeeb-f520-4968-a6ed-68be6069523d
+
+
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
