@@ -28,7 +28,14 @@ class BaseScraper(ABC):
         try:
             response = self.session.get(url, timeout=timeout)
             response.raise_for_status()
-            response.encoding = response.apparent_encoding
+            # Türkçe haber siteleri neredeyse her zaman UTF-8 kullanır.
+            # apparent_encoding bazen yanlış (latin-1 vs.) algılayıp karakter bozukluğuna yol açar.
+            # Önce UTF-8 dene, bozuk çıkarsa apparent_encoding'e düş.
+            try:
+                response.content.decode('utf-8')
+                response.encoding = 'utf-8'
+            except (UnicodeDecodeError, AttributeError):
+                response.encoding = response.apparent_encoding
             return BeautifulSoup(response.text, "lxml")
         except Exception as e:
             print(f"[SCRAPER] {url} çekilemedi: {e}")

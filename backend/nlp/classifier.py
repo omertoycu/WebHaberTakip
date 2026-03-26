@@ -50,7 +50,8 @@ KULTUREL_NEGATIF = [
 
 # "Trafik Kazası" negatif kontrol: cinayet, kavga gibi durumları kaza sanmasın
 TRAFIK_NEGATIF = [
-    r"cinayet", r"bıçakla", r"vurdu", r"silahlı", r"kavga", r"tartışma", r"intihar", r"faili meçhul"
+    r"cinayet", r"bıçakla", r"vurdu", r"silahlı", r"kavga", r"tartışma", r"intihar", r"faili meçhul",
+    r"tır park", r"otopark", r"park sorunu", r"parkına dönüştü", r"park alanı", r"park edilm"
 ]
 
 # "Elektrik Kesintisi" negatif kontrol: su ile ilgili kelimeler varsa elektrik kesintisi olmamalı

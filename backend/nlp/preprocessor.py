@@ -17,7 +17,25 @@ def temizle(metin: str) -> str:
 
     # 2. Reklam ve gereksiz kalıpları kaldır (yaygın Türkçe haber sitesi footer'ları)
     reklam_kaliplari = [
-        # --- Mevcut kalıplar (düzeltilmiş - greedy .* kaldırıldı) ---
+        # --- Multimedya bildirim kalıpları ---
+        r'[Hh]aber albümü için resme tıklayın',
+        r'[Ff]oto(?:ğraf)?\s+(?:albümü|galerisi)\s+için\s+(?:resme\s+)?tıklayın',
+        r'[Vv]ideo için play.{0,5}[ea] tıklayın',
+        r'[Vv]ideo için tıklayın',
+        r'[Rr]esmi? büyütmek için tıklayın',
+        r'Büyütmek için resm[ei] tıklayın',
+        r'\d+\s+[Hh]aber albümü için resme tıklayın',
+
+        # --- Döviz Kuru / Finans Ticker Şeritleri ---
+        # "Thursday, 26 March 2026 Dolar 44,3595 0,06 Euro 51.." gibi
+        r'(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s*,?\s*\d{1,2}\s+\w+\s+\d{4}\s+Dolar[\s\S]{0,300}',
+        r'(?:Pazartesi|Salı|Çarşamba|Perşembe|Cuma|Cumartesi|Pazar)\s*,?\s*\d{1,2}\s+\w+\s+\d{4}\s+Dolar[\s\S]{0,300}',
+        r'Dolar\s+\d[\d.,]+\s+[\d.,-]+\s+Euro\s+\d[\d.,]+[\s\S]{0,250}',
+        r'Dolar\s+\d[\d.,]+\s+[\d.,-]+\s+(?:Euro|Sterlin|Altın|Gümüş)[\s\S]{0,300}',
+        # Bağımsız finans satırları
+        r'(?:Euro|Sterlin|Altın|Gümüş|Brent Petrol)\s+\d[\d.,]+\s+[\d.,-]+',
+
+        # --- Haber yönlendirme kalıpları ---
         r'Bu haber\b.{0,60}kaynak.{0,30}\.',
         r'Haber\b.{0,30}için tıklayın.{0,10}\.',
         r'İlgili Haberler\b',
@@ -30,17 +48,13 @@ def temizle(metin: str) -> str:
         r'\bAA\s*$', r'\bDHA\s*$', r'\bİHA\s*$',
         r'\(BSHA\)',
         r'Haberin\s+devamı\s+için',
+        r'Taraf sayısının fazlalığı nedeniyle',
 
         # --- Sosyal medya paylaşım butonları ---
-        # Sıralı platform adları + Paylaş (WhatsApp Twitle Paylaş gibi)
         r'(?:(?:WhatsApp|Twitle|Twitter|Facebook|Instagram|Telegram|LinkedIn|Pinterest)\s*)+(?:ile\s+)?(?:Paylaş|paylaş|PAYLAŞ)',
-        # Büyütme linki
-        r'Büyütmek için resm[ei] tıklayın',
-        # Tek başına paylaş ifadeleri
         r'\bPaylaş\s*[-–]\s*',
         r'\bPAYLAŞ\b',
         r'\bpaylaş\b(?:\s+[-–]\s*)?',
-        # Tek başına platform adları (haber içeriğinde bağımsız çıkan)
         r'\b(?:WhatsApp|Twitle|Twitter)\b(?=\s+(?:WhatsApp|Twitle|Twitter|Facebook|Instagram|Telegram|Paylaş|paylaş|PAYLAŞ))',
         r'\bTwitle\b',
 
@@ -64,12 +78,18 @@ def temizle(metin: str) -> str:
         r'Bir sonraki haber(?:e geç)?',
         r'Sıradaki haber',
         r'Devamını oku(?:yun)?',
-        
-        # --- Yerel Spam Reklamlar ---
+
+        # --- Yerel Spam Reklamlar ve Seri İlanlar ---
         r'ÇATI USTASI[\s\S]*',
         r'HURDA GAZETE[\s\S]*',
         r'İlanlarınız hem gazete[\s\S]*',
         r'Gün sayısı arttıkça[\s\S]*',
+        # Telefon numaralı ilan kalıpları (05xx xxx xx xx)
+        r'(?:Tel|Telefon|Gsm|İletişim)\s*(?::|;)?\s*0?\d{3}\s*\d{3}\s*\d{2}\s*\d{2}',
+        r'\b0\d{3}\s+\d{3}\s+\d{2}\s+\d{2}\b',
+        # Fiyat içeren seri ilan satırları
+        r'Kilo\s+ile\s+[\s\S]{0,100}satılır',
+        r'\b\d+\s*TL\b\s*(?:Tel|Telefon)',
 
         # --- Telif / Kaynak / Copyright ---
         r'Tüm hakları saklıdır\.?',
