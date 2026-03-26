@@ -1,5 +1,9 @@
 # 🗺️ Kocaeli Haber İzleme Sistemi (Web Haber Takip)
 
+
+https://github.com/user-attachments/assets/41beeeeb-f520-4968-a6ed-68be6069523d
+
+
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
@@ -25,7 +29,7 @@ Kaza, yangın, hırsızlık, elektrik kesintisi gibi önemli haberler yapay zeka
 ## 🛠️ Teknolojiler
 
 ### Backend
-*   **Dil**: Python 3.x
+*   **Dil**: Python 3.11x
 *   **Framework**: FastAPI, Uvicorn
 *   **Veritabanı**: MongoDB (Motor / PyMongo)
 *   **NLP & ML Modelleri**: Spacy, Sentence-Transformers, Scikit-Learn
@@ -48,7 +52,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak için aşağıdaki adımları i
 
 ### 2. Projeyi Klonlayın ve Bağımlılıkları Kurun
 ```bash
-git clone https://github.com/kullaniciadi/WebHaberTakip.git
+git clone https://github.com/omertoycu/WebHaberTakip.git
 cd WebHaberIzleme
 ```
 
