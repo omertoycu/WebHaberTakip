@@ -52,7 +52,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak için aşağıdaki adımları i
 
 ### 2. Projeyi Klonlayın ve Bağımlılıkları Kurun
 ```bash
-git clone https://github.com/kullaniciadi/WebHaberTakip.git
+git clone https://github.com/omertoycu/WebHaberTakip.git
 cd WebHaberIzleme
 ```
 
