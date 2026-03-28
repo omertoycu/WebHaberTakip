@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Optional
-import requests
+import cloudscraper
 from bs4 import BeautifulSoup
 from ..config import SCRAPE_DAYS
 
@@ -12,13 +12,15 @@ class BaseScraper(ABC):
     """Tüm haber scraper'larının base sınıfı."""
 
     def __init__(self):
-        self.session = requests.Session()
+        # cloudscraper: Cloudflare JS Challenge'larını otomatik aşar
+        self.session = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
         self.session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            ),
             "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8",
         })
         self.cutoff_date = datetime.now() - timedelta(days=SCRAPE_DAYS)

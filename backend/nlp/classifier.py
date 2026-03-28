@@ -11,24 +11,26 @@ import re
 KATEGORI_ANAHTAR_KELIMELER = {
     "Trafik Kazası": [
         r"\btrafik kaza", r"\bzincirleme kaza", r"\barraç devril", r"\btakla at", r"\byayaya çarp", 
-        r"\byoldan çık", r"\bşarampole", r"\baraç çarpış", r"\baraç kontrolden çık"
+        r"\byoldan çık", r"\bşarampole", r"\baraç çarpış", r"\baraç kontrolden", r"\bmotosiklet kaza",
+        r"\botomobil devril", r"\bkamyon devril", r"\btıra çarp"
     ],
     "Yangın": [
-        r"\byangın", r"\balevler", r"\bitfaiye ekipleri sevk", r"\balevlere teslim", 
-        r"\byandı\b", r"\bitfaiye müdahale", r"\bbaca yangın", r"\bçatı yangın", r"\borman yangın"
+        r"\byangın", r"\balev", r"\bitfaiye\b", r"\balevlere teslim", 
+        r"\byandı\b", r"\byanarak", r"\bkül oldu", r"\bdumandan etkilend", r"\bkundakla"
     ],
     "Elektrik Kesintisi": [
-        r"\belektrik kesintisi\b", r"\belektrikler kesil", r"\btrafo patla", r"\benerji verileme",
-        r"\belektrik arıza", r"\belektrik verileme", r"\belektriksiz kal",
+        r"\belektrik kesintis", r"\belektrikler kes", r"\btrafo patla", r"\benerji verileme",
+        r"\belektrik arıza", r"\belektriksiz kal", r"\bSEDAŞ", r"\bplanlı kesinti"
     ],
     "Hırsızlık": [
-        r"\bhırsızlık\b", r"\bsoygun\b", r"\bkapkaç\b", r"\byankesici", r"\bdolandırıcı", r"\bgasp edil",
-        r"\bkasadaki\b", r"\bçalın", r"\bçalarak", r"\bvurgun\b", r"\beve gir", r"\bgirerek çal"
+        r"\bhırsız", r"\bsoygun", r"\bkapkaç", r"\byankesici", r"\bdolandırıc", r"\bgasp\b",
+        r"\bkasadaki\b", r"\bçalın", r"\bçalarak", r"\bçaldı", r"\bvurgun\b", r"\beve girerek", 
+        r"\bçalmaya çalış", r"\bsahte dekont", r"\bsoydular"
     ],
     "Kültürel Etkinlikler": [
         r"\bfestival\b", r"\bkonser\b", r"\bsergi\b", r"\bfuar\b", r"\bsempozyum\b", 
-        r"\bkonferans\b", r"\btiyatro oyunu\b", r"\bmüzikal\b", r"\bkültür merkezi", r"\betkinlik düzenle",
-        r"\bkursiyer", r"\batölye çalışması", r"\bgösterisi\b", r"\bsergisi\b"
+        r"\bkonferans\b", r"\btiyatro\b", r"\bmüzikal\b", r"\bkültür merkezi", r"\betkinlik\b",
+        r"\bsöyleşi", r"\bimza günü", r"\bgösterime gir", r"\batölye çalış"
     ]
 }
 
@@ -51,7 +53,8 @@ KULTUREL_NEGATIF = [
 # "Trafik Kazası" negatif kontrol: cinayet, kavga gibi durumları kaza sanmasın
 TRAFIK_NEGATIF = [
     r"cinayet", r"bıçakla", r"vurdu", r"silahlı", r"kavga", r"tartışma", r"intihar", r"faili meçhul",
-    r"tır park", r"otopark", r"park sorunu", r"parkına dönüştü", r"park alanı", r"park edilm"
+    r"tır park", r"otopark", r"park sorunu", r"parkına dönüştü", r"park alanı", r"park edilm",
+    r"yolda bırakt", r"zam\b", r"yakaland", r"hükümlü", r"aranan", r"dolandırıcı"
 ]
 
 # "Elektrik Kesintisi" negatif kontrol: su ile ilgili kelimeler varsa elektrik kesintisi olmamalı
@@ -59,6 +62,7 @@ ELEKTRIK_NEGATIF = [
     r"\bsu kesintisi", r"\bsu kesil", r"\bsular kesil", r"\bsu arıza", 
     r"\bsu şebekesi", r"\bİSU\b", r"\bsu verileme", r"\bsulara ne zaman",
     r"\bsular ne zaman", r"\bsu hattı", r"\bsu boru",
+    r"jeotermal", r"doğalgaz", r"gaz kesintisi", r"isyan"
 ]
 
 def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
@@ -110,8 +114,8 @@ def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
             en_iyi_skor = benzerlikler[en_iyi_kat]
             
             # E5-large için eşik değer testi (Genellikle 0.75-0.85 arası iyidir)
-            # 0.78 ve üzeri genellikle ilgili kategoridedir.
-            MIN_BENZERLIK = 0.78
+            # 0.81 ve üzeri ilgili kategoriye çok yakındır.
+            MIN_BENZERLIK = 0.81
             
             if en_iyi_skor >= MIN_BENZERLIK:
                 tahmin = en_iyi_kat

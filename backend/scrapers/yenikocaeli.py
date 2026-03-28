@@ -12,7 +12,7 @@ class YeniKocaeliScraper(CagdasKocaeliScraper):
 
     def scrape(self) -> list[dict]:
         haberler = []
-        kategoriler = ["/", "/son-dakika/", "/guncel/", "/kocaeli-haberleri/"]
+        kategoriler = ["/", "/haber/guncel.html", "/haber/polis-adliye.html"]
         ziyaret_edilen = set()
 
         for kategori in kategoriler:
