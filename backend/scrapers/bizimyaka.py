@@ -12,7 +12,7 @@ class BizimYakaScraper(CagdasKocaeliScraper):
 
     def scrape(self) -> list[dict]:
         haberler = []
-        kategoriler = ["/", "/gundem", "/asayis"]
+        kategoriler = ["/", "/kocaeli-son-dakika-haberleri", "/kocaeli-asayis-haberleri"]
         ziyaret_edilen = set()
 
         for kategori in kategoriler:
@@ -20,6 +20,7 @@ class BizimYakaScraper(CagdasKocaeliScraper):
             if not soup:
                 continue
 
+            kategori_haber_sayisi = 0
             for link in soup.find_all("a", href=True):
                 href = link.get("href", "")
                 
@@ -40,7 +41,8 @@ class BizimYakaScraper(CagdasKocaeliScraper):
                         haber = self._haber_cek(tam_url)
                         if haber:
                             haberler.append(haber)
-                            if len(haberler) >= 50:
+                            kategori_haber_sayisi += 1
+                            if kategori_haber_sayisi >= 50:
                                 break
 
         print(f"[{self.KAYNAK_ADI}] {len(haberler)} haber çekildi.")

@@ -10,12 +10,12 @@ import re
 # çünkü "kesinti" kelimesi her ikisinde de geçebilir.
 KATEGORI_ANAHTAR_KELIMELER = {
     "Trafik Kazası": [
-        r"\btrafik kaza", r"\bzincirleme kaza", r"\barraç devril", r"\btakla at", r"\byayaya çarp", 
+        r"\btrafik kaza", r"\bzincirleme kaza", r"\barraç devril", r"\btakla at", r"\byayaya çarp",
         r"\byoldan çık", r"\bşarampole", r"\baraç çarpış", r"\baraç kontrolden", r"\bmotosiklet kaza",
         r"\botomobil devril", r"\bkamyon devril", r"\btıra çarp"
     ],
     "Yangın": [
-        r"\byangın", r"\balev", r"\bitfaiye\b", r"\balevlere teslim", 
+        r"\byangın", r"\balev", r"\bitfaiye\b", r"\balevlere teslim",
         r"\byandı\b", r"\byanarak", r"\bkül oldu", r"\bdumandan etkilend", r"\bkundakla"
     ],
     "Elektrik Kesintisi": [
@@ -24,11 +24,11 @@ KATEGORI_ANAHTAR_KELIMELER = {
     ],
     "Hırsızlık": [
         r"\bhırsız", r"\bsoygun", r"\bkapkaç", r"\byankesici", r"\bdolandırıc", r"\bgasp\b",
-        r"\bkasadaki\b", r"\bçalın", r"\bçalarak", r"\bçaldı", r"\bvurgun\b", r"\beve girerek", 
+        r"\bkasadaki\b", r"\bçalın", r"\bçalarak", r"\bçaldı", r"\bvurgun\b", r"\beve girerek",
         r"\bçalmaya çalış", r"\bsahte dekont", r"\bsoydular"
     ],
     "Kültürel Etkinlikler": [
-        r"\bfestival\b", r"\bkonser\b", r"\bsergi\b", r"\bfuar\b", r"\bsempozyum\b", 
+        r"\bfestival\b", r"\bkonser\b", r"\bsergi\b", r"\bfuar\b", r"\bsempozyum\b",
         r"\bkonferans\b", r"\btiyatro\b", r"\bmüzikal\b", r"\bkültür merkezi", r"\betkinlik\b",
         r"\bsöyleşi", r"\bimza günü", r"\bgösterime gir", r"\batölye çalış"
     ]
@@ -46,7 +46,7 @@ KATEGORI_ACIKLAMALARI = {
 
 # Negatif kelimeler: Eğer bu kelimeler varsa, "Kültürel Etkinlikler" olamaz.
 KULTUREL_NEGATIF = [
-    r"uyuşturucu", r"polis", r"gözaltı", r"tutuklan", r"cezaevi", r"hapis", r"silah", 
+    r"uyuşturucu", r"polis", r"gözaltı", r"tutuklan", r"cezaevi", r"hapis", r"silah",
     r"bıçak", r"kaza", r"cinayet", r"ceset", r"operasyon", r"çete", r"kaçakçı", r"yasa dışı", r"şüpheli", r"suç örgütü"
 ]
 
@@ -59,11 +59,12 @@ TRAFIK_NEGATIF = [
 
 # "Elektrik Kesintisi" negatif kontrol: su ile ilgili kelimeler varsa elektrik kesintisi olmamalı
 ELEKTRIK_NEGATIF = [
-    r"\bsu kesintisi", r"\bsu kesil", r"\bsular kesil", r"\bsu arıza", 
+    r"\bsu kesintisi", r"\bsu kesil", r"\bsular kesil", r"\bsu arıza",
     r"\bsu şebekesi", r"\bİSU\b", r"\bsu verileme", r"\bsulara ne zaman",
     r"\bsular ne zaman", r"\bsu hattı", r"\bsu boru",
     r"jeotermal", r"doğalgaz", r"gaz kesintisi", r"isyan"
 ]
+
 
 def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
     """
@@ -72,8 +73,8 @@ def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
     Eğer 'Diğer' çıkarsa ve embedding sağlanmışsa Yapay Zeka (Zero-Shot) ile tahmin edilir.
     """
     arama_metni = baslik.lower()  # Regex sadece BAŞLIKTA arasın (Gürültü önleme)
-    negative_metin = (baslik + " " + icerik).lower() # Negatif kontroller için tam metin
-    
+    negative_metin = (baslik + " " + icerik).lower()  # Negatif kontroller için tam metin
+
     # --- 1. KURAL TABANLI SINIFLANDIRMA (Hızlı ve Kesin) ---
     for kategori, pattern_list in KATEGORI_ANAHTAR_KELIMELER.items():
         # Negatif kontroller
@@ -81,9 +82,10 @@ def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
             continue
         if kategori == "Trafik Kazası" and any(re.search(p, negative_metin) for p in TRAFIK_NEGATIF):
             continue
-        if kategori == "Elektrik Kesintisi" and any(re.search(p, negative_metin, re.IGNORECASE) for p in ELEKTRIK_NEGATIF):
+        if kategori == "Elektrik Kesintisi" and any(
+                re.search(p, negative_metin, re.IGNORECASE) for p in ELEKTRIK_NEGATIF):
             continue
-            
+
         # Pozitif kontrol
         for pattern in pattern_list:
             if re.search(pattern, arama_metni, re.IGNORECASE):
@@ -93,7 +95,7 @@ def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
     if embedding is not None and isinstance(embedding, list) and len(embedding) > 0:
         try:
             from .embedding_helper import kosinüs_benzerlik, metni_vektorlesitir
-            
+
             # Kategori vektörlerini önbelleğe al (Lazy initialization)
             # Embedding model yüklemesi ve pre-computation
             if not hasattr(siniflandir, "kategori_vektorleri"):
@@ -105,25 +107,25 @@ def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
                     # Aslında "passage: " ile simetrik benzerlik iyi sonuç verir.
                     siniflandir.kategori_vektorleri[kat] = metni_vektorlesitir(aciklama)
                 print("[AI] Kategori referans vektörleri hazır.")
-            
+
             benzerlikler = {}
             for kat, kat_vec in siniflandir.kategori_vektorleri.items():
                 benzerlikler[kat] = kosinüs_benzerlik(embedding, kat_vec)
-                
+
             en_iyi_kat = max(benzerlikler, key=benzerlikler.get)
             en_iyi_skor = benzerlikler[en_iyi_kat]
-            
+
             # E5-large için eşik değer testi (Genellikle 0.75-0.85 arası iyidir)
             # 0.81 ve üzeri ilgili kategoriye çok yakındır.
-            MIN_BENZERLIK = 0.81
-            
+            MIN_BENZERLIK = 0.78
+
             if en_iyi_skor >= MIN_BENZERLIK:
                 tahmin = en_iyi_kat
                 print(f"[AI] Embedding Benzerliği ile sınıflandırıldı: {tahmin} (Skor: {en_iyi_skor:.2f})")
-                
+
                 if tahmin == "Genel":
                     return "Diğer"
-                
+
                 # AI tahminini negatif filtrelerle doğrula
                 if tahmin == "Kültürel Etkinlikler" and any(re.search(p, arama_metni) for p in KULTUREL_NEGATIF):
                     return "Diğer"
@@ -131,15 +133,16 @@ def siniflandir(baslik: str, icerik: str, embedding: list = None) -> str:
                     return "Diğer"
                 if tahmin == "Elektrik Kesintisi" and any(re.search(p, arama_metni) for p in ELEKTRIK_NEGATIF):
                     return "Diğer"
-                
+
                 return tahmin
             else:
                 print(f"[AI] Benzerlik çok düşük: {en_iyi_kat} ({en_iyi_skor:.2f}) < {MIN_BENZERLIK}")
-                
+
         except Exception as e:
             print(f"[HATA] Embedding sınıflandırma çalışmadı: {e}")
-            
+
     return "Diğer"
+
 
 def tum_anahtar_kelimeler() -> dict:
     """Rapor için tüm anahtar kelime listesini döndürür."""

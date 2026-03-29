@@ -42,7 +42,7 @@ class CagdasKocaeliScraper(BaseScraper):
                         haber_linkleri.append(tam_url)
                         ziyaret_edilen.add(tam_url)
 
-            for url in haber_linkleri[:30]:  # Her kategoriden max 30 haber
+            for url in haber_linkleri[:50]:  # Her kategoriden max 50 haber
                 haber = self._haber_cek(url)
                 if haber:
                     haberler.append(haber)

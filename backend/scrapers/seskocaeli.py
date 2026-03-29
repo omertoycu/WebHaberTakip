@@ -20,6 +20,7 @@ class SesKocaeliScraper(CagdasKocaeliScraper):
             if not soup:
                 continue
 
+            kategori_sayisi = 0
             for link in soup.find_all("a", href=True):
                 href = link.get("href", "")
                 
@@ -40,7 +41,8 @@ class SesKocaeliScraper(CagdasKocaeliScraper):
                         haber = self._haber_cek(tam_url)
                         if haber:
                             haberler.append(haber)
-                            if len(haberler) >= 50:
+                            kategori_sayisi += 1
+                            if kategori_sayisi >= 50:
                                 break
 
         print(f"[{self.KAYNAK_ADI}] {len(haberler)} haber çekildi.")
