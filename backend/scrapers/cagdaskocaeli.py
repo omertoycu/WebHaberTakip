@@ -4,6 +4,7 @@
 from datetime import datetime
 from .base_scraper import BaseScraper
 import re
+import json
 
 
 class CagdasKocaeliScraper(BaseScraper):
@@ -90,30 +91,63 @@ class CagdasKocaeliScraper(BaseScraper):
             return None
 
     def _tarih_bul(self, soup) -> datetime | None:
-        """Sayfadan yayın tarihini çıkarır."""
-        # time etiketi
-        time_el = soup.find("time")
-        if time_el:
-            datetime_attr = time_el.get("datetime", "")
-            if datetime_attr:
+        """Sayfadan yayın tarihini çıkarır. JSON-LD ve Meta etiketlerine öncelik verir."""
+
+        # 1. JSON-LD (Haber sitelerinin %90'ı bunu kullanır, en kesin yöntemdir)
+        for script in soup.find_all("script", type="application/ld+json"):
+            try:
+                data = json.loads(script.string)
+                # JSON-LD bazen liste, bazen sözlük olabilir
+                if isinstance(data, list):
+                    for item in data:
+                        if "datePublished" in item:
+                            return datetime.fromisoformat(item["datePublished"].replace("Z", "+00:00")[:19])
+                elif isinstance(data, dict):
+                    if "datePublished" in data:
+                        return datetime.fromisoformat(data["datePublished"].replace("Z", "+00:00")[:19])
+                    elif "@graph" in data:  # Yoast SEO yapısı
+                        for item in data["@graph"]:
+                            if "datePublished" in item:
+                                return datetime.fromisoformat(item["datePublished"].replace("Z", "+00:00")[:19])
+            except:
+                continue
+
+        # 2. Gelişmiş Meta Etiketleri
+        meta_tags = [
+            {"property": "article:published_time"},
+            {"name": "pubdate"},
+            {"name": "datePublished"},
+            {"itemprop": "datePublished"}
+        ]
+        for attrs in meta_tags:
+            meta = soup.find("meta", attrs)
+            if meta and meta.get("content"):
                 try:
-                    return datetime.fromisoformat(datetime_attr.replace("Z", "+00:00"))
+                    return datetime.fromisoformat(meta["content"].replace("Z", "+00:00")[:19])
                 except:
                     pass
-            metin = time_el.get_text(strip=True)
-            return self._parse_turkce_tarih(metin)
-        
-        # meta etiketi
-        meta = soup.find("meta", {"property": "article:published_time"})
-        if meta and meta.get("content"):
-            try:
-                return datetime.fromisoformat(meta["content"].replace("Z", "+00:00"))
-            except:
-                pass
-        
-        # Text içinde tarih arama
-        metin = soup.get_text()
-        return self._parse_turkce_tarih(metin)
+
+        # 3. Time Etiketi
+        time_el = soup.find("time")
+        if time_el:
+            datetime_attr = time_el.get("datetime")
+            if datetime_attr:
+                try:
+                    return datetime.fromisoformat(datetime_attr.replace("Z", "+00:00")[:19])
+                except:
+                    pass
+            # Time etiketi içi text kontrolü
+            parsed = self._parse_turkce_tarih(time_el.get_text(strip=True))
+            if parsed: return parsed
+
+        # 4. Sadece tarih belirten sınıflarda ara (TÜM METİNDE ARAMA YAPMA!)
+        tarih_elementleri = soup.find_all(class_=re.compile(r"date|tarih|time|yayin", re.I))
+        for el in tarih_elementleri:
+            parsed = self._parse_turkce_tarih(el.get_text(strip=True))
+            if parsed:
+                return parsed
+
+        return None  # Hiçbiri yoksa risk alma, None dön!
 
     def _parse_turkce_tarih(self, metin: str) -> datetime | None:
         """Türkçe tarih formatlarını parse eder."""

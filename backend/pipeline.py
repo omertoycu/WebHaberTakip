@@ -38,7 +38,7 @@ async def pipeline_calistir() -> dict:
     ham_haberler = []
     loop = asyncio.get_event_loop()
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         futures = []
         for ScraperClass in ALL_SCRAPERS:
             def run_scraper(cls=ScraperClass):
@@ -70,7 +70,11 @@ async def pipeline_calistir() -> dict:
             icerik = temizle(ham.get("icerik", ""))
             kaynak_url = ham.get("kaynak_url", "")
             kaynak_adi = ham.get("kaynak_adi", "")
-            yayin_tarihi = ham.get("yayin_tarihi") or datetime.utcnow()
+            yayin_tarihi = ham.get("yayin_tarihi")
+
+            if not yayin_tarihi:
+                print(f"[PIPELINE] Tarihi okunamayan haber es geçildi: {baslik[:40]}...")
+                continue
 
             if not baslik or len(icerik) < 50:
                 continue

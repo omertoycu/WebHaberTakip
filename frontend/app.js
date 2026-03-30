@@ -204,15 +204,21 @@ function markerlariGuncelle(haberler) {
         if (grup.length === 1) {
             clusteredHaberler.push({ ...grup[0], orijinal_lat: grup[0].lat, orijinal_lng: grup[0].lng, count: 1 });
         } else {
-            const radius = 0.003; // Yaklaşık 300 metre
-            const angleStep = (Math.PI * 2) / grup.length;
             grup.forEach((h, i) => {
                 const newH = { ...h };
                 newH.orijinal_lat = h.lat;
                 newH.orijinal_lng = h.lng;
-                newH.lat = h.lat + radius * Math.cos(i * angleStep);
-                newH.lng = h.lng + radius * Math.sin(i * angleStep);
+
+                // Doğal Görünümlü Rastgele Dağılım (Random Scatter)
+                const randomRadius = 0.0005 + (Math.random() * 0.0035);
+                // Açıyı rastgele belirle (0 - 360 derece arası herhangi bir yön)
+                const randomAngle = Math.random() * Math.PI * 2;
+
+                // Koordinatlara rastgele sapmayı ekle
+                newH.lat = h.lat + (randomRadius * Math.cos(randomAngle));
+                newH.lng = h.lng + (randomRadius * Math.sin(randomAngle));
                 newH.count = grup.length;
+
                 clusteredHaberler.push(newH);
             });
         }
